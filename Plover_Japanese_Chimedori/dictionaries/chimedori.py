@@ -101,9 +101,8 @@ def reverse_translate(text):
         vow2_key = find_keys(text[:1], vowel2_dict)
         if vow2_key != "":
             text = text[1:]
-        suf, inc = find_suffix(text[:2])
+        suf_key, inc = find_suffix(text[:2])
         text = text[inc:]
-        suf_key = find_keys(suf, suffix_dict)
         if cons_key == "" and vow1_key == "" and vow2_key == "" and suf_key == "":
             return None
         result.append(cons_key + vow1_key + vow2_key + suf_key)
