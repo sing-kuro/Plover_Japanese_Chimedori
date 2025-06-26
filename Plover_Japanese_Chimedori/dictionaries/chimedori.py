@@ -5,11 +5,26 @@ def lookup(key):
     arr = key[0].split("-")
     ret = translate_left(arr[0])
     if (len(arr) > 1):
-        ret += translate_left(arr[1][::1])
-    return "{^" + finalize(ret) + "^}"
+        ret += translate_left(arr[1])
+    return "{^" + ret + "^}"
 
-def reverse_lookup(_):
-    return []
+def reverse_lookup(text):
+    if text[0:2] != "{^" or text[-2:] != "^}":
+        return []
+    text = text[2:-2]
+    original_text = text
+    strokes = reverse_translate(text)
+    if strokes is None:
+        return []
+    results = set()
+    for stroke in strokes:
+        restore = ""
+        for s in stroke.split("/"):
+            restore += lookup([s]).replace("{^", "").replace("^}", "")
+        if restore == original_text:
+            results.add(tuple(stroke.split("/")))
+    return list(results)
+
 
 def translate_left(key):
     s = set()
@@ -76,8 +91,77 @@ def suffix(s):
         str += "っ"
     return suffix_dict[str]
 
-def finalize(str):
-    return str
+def reverse_translate(text):
+    result = []
+    while len(text) > 0:
+        kana1, inc = find_kana1(text[:2])
+        cons_key = find_keys(kana1[0], consonant_dict)
+        vow1_key = find_keys(kana1[1], vowel1_dict)
+        text = text[inc:]
+        vow2_key = find_keys(text[:1], vowel2_dict)
+        if vow2_key != "":
+            text = text[1:]
+        suf, inc = find_suffix(text[:2])
+        text = text[inc:]
+        suf_key = find_keys(suf, suffix_dict)
+        if cons_key == "" and vow1_key == "" and vow2_key == "" and suf_key == "":
+            return None
+        result.append(cons_key + vow1_key + vow2_key + suf_key)
+    returns = ""
+    for i in range(len(result)):
+        if i % 2 == 0:
+            returns += "/"
+        else:
+            returns += "-"
+        returns += result[i]
+    return [returns[1:]]
+
+def find_kana1(text):
+    for cons, values in kana1_dict.items():
+        for vow, kana in values.items():
+            if kana == text:
+                return ((cons, vow), len(kana))
+    for cons, values in kana1_dict.items():
+        for vow, kana in values.items():
+            if kana == text[0]:
+                return ((cons, vow), 1)
+    return (("", ""), 0)
+
+def find_keys(text, dictionary):
+    for key, value in dictionary.items():
+        if value == text:
+            return key
+    return ""
+
+def to_romaji(kana):
+    if kana == "あ":
+        return "a"
+    elif kana == "い":
+        return "i"
+    elif kana == "う":
+        return "u"
+    elif kana == "え":
+        return "e"
+    elif kana == "お":
+        return "o"
+    elif kana == "や":
+        return "ya"
+    elif kana == "ゆ":
+        return "yu"
+    elif kana == "よ":
+        return "yo"
+    else:
+        return ""
+    
+def find_suffix(text):
+    for suf, value in suffix_dict.items():
+        if text == value:
+            return suf, len(value)
+    for suf, value in suffix_dict.items():
+        if text[0] == value:
+            return suf, 1
+    return "", 0
+
 
 consonant_dict = {
     "": "",

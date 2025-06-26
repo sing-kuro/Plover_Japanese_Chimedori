@@ -6,7 +6,7 @@ def lookup(key):
     arr = key[0].split("-")
     ret = translate_left(arr[0])
     if (len(arr) > 1):
-        ret += translate_left(arr[1][::1])
+        ret += translate_left(arr[1])
     return "{^" + finalize(ret) + "^}"
 
 def reverse_lookup(text):
